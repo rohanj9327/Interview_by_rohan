@@ -10,6 +10,7 @@ class StubSession:
     thread_id = "testcli"
 
     def __init__(self):
+        self.values: dict = {}
         self.answers = []
         self.hints = []
 
@@ -55,3 +56,13 @@ def test_unknown_command_is_not_submitted(monkeypatch):
     monkeypatch.setattr(builtins, "input", lambda prompt="": "/run")
     cli.handle_answer({"index": 1, "total": 2, "time_limit_sec": 180})
     assert session.answers == []
+
+
+def test_interviewer_turns_are_labelled_with_name(capsys):
+    from interview_simulator.models import InterviewConfig, Turn
+
+    session = StubSession()
+    session.values = {"config": InterviewConfig()}
+    session.new_turns = lambda: [Turn(role="interviewer", kind="question", text="Tell me about Kafka.")]
+    CLI(session, speak=False).show_new_turns()
+    assert "Rohan: Tell me about Kafka." in capsys.readouterr().out

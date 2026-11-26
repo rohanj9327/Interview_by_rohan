@@ -34,6 +34,8 @@ def test_setup_interview_report_and_history(ui):
     at.run()
     assert not at.exception
     assert button(at, "Start interview").disabled  # nothing provided yet
+    assert at.title[0].value == "🎙️ Interview by Rohan"
+    assert at.text_input(key="opt_name").value == "Rohan"
 
     at.toggle(key="use_sample_resume").set_value(True)
     at.toggle(key="use_sample_jd").set_value(True)
@@ -47,6 +49,8 @@ def test_setup_interview_report_and_history(ui):
     session = at.session_state["session"]
     assert session.pending()["question_id"] == "q1"
     assert any("Kafka service" in m.markdown[0].value for m in at.chat_message if m.markdown)
+    assert any(m.markdown[0].value.startswith("**Rohan:**") for m in at.chat_message if m.markdown)
+    assert session.values["config"].interviewer_name == "Rohan"
 
     # Hint, then a typed answer (fake LLM asks one follow-up on the first answer)
     button(at, "💡 Hint").click()

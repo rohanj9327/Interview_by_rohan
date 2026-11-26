@@ -1,7 +1,7 @@
 [project]
 name = "interview-simulator"
 version = "0.1.0"
-description = "AI mock interview simulator (resume + JD aware, voice, live coding) built on LangGraph"
+description = "Interview by Rohan: AI mock interview simulator (resume + JD aware, voice, live coding) built on LangGraph"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [

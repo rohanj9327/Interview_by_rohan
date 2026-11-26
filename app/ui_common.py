@@ -137,14 +137,23 @@ def render_report(values: dict, markdown: str, key_prefix: str = "report") -> No
                        mime="text/markdown", key=f"{key_prefix}_dl")
 
 
-def render_transcript(turns: list, height: int | None = None) -> None:
+def interviewer_name(values: dict) -> str:
+    config = values.get("config")
+    return getattr(config, "interviewer_name", None) or "Rohan"
+
+
+def render_transcript(turns: list, height: int | None = None, name: str = "Rohan") -> None:
     box = st.container(height=height) if height else st.container()
     with box:
         for t in turns:
             if t.role == "interviewer":
                 avatar = {"hint": "💡", "tip": "✅"}.get(t.kind, "🎙️")
                 with st.chat_message("assistant", avatar=avatar):
-                    prefix = {"hint": "**Hint:** ", "tip": "**Quick tip:** ", "follow_up": "**Follow-up:** "}.get(t.kind, "")
+                    prefix = {
+                        "hint": f"**Hint from {name}:** ",
+                        "tip": f"**Quick tip from {name}:** ",
+                        "follow_up": f"**{name} (follow-up):** ",
+                    }.get(t.kind, f"**{name}:** ")
                     st.markdown(prefix + t.text)
             else:
                 with st.chat_message("user", avatar="🧑‍💻"):

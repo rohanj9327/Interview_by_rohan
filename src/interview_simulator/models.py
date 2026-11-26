@@ -39,7 +39,7 @@ class InterviewConfig(BaseModel):
     max_follow_ups: int = 2
     difficulty: Literal["auto", "easy", "medium", "hard"] = "auto"
     company: str | None = None
-    interviewer_name: str = "Jordan"
+    interviewer_name: str = "Rohan"
 
 
 # --------------------------------------------------------------------------------------

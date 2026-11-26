@@ -8,7 +8,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parent))  # make ui_common importable from views
 
-st.set_page_config(page_title="AI Interview Simulator", page_icon="🎙️", layout="wide")
+st.set_page_config(page_title="Interview by Rohan", page_icon="🎙️", layout="wide")
 logging.basicConfig(level=logging.WARNING)
 
 pages = st.navigation([

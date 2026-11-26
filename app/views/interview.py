@@ -14,7 +14,14 @@ import time
 
 import streamlit as st
 import streamlit.components.v1 as components
-from ui_common import CATEGORY_LABEL, checkpointer, render_report, render_transcript, theme_type
+from ui_common import (
+    CATEGORY_LABEL,
+    checkpointer,
+    interviewer_name,
+    render_report,
+    render_transcript,
+    theme_type,
+)
 
 from interview_simulator.config import PROJECT_ROOT, get_settings
 from interview_simulator.models import CodingProblem, InterviewConfig
@@ -257,9 +264,10 @@ def available_providers() -> dict[str, str]:
 
 def setup_view() -> None:
     locked = busy()
-    st.title("🎙️ AI Interview Simulator")
-    st.caption("A spoken mock interview for software engineers, tailored to your resume and the job. "
-               "Answer with your voice, solve live coding problems, and get detailed feedback.")
+    st.title("🎙️ Interview by Rohan")
+    st.caption("Your personal mock interviewer for software engineering roles. Rohan reads your resume and "
+               "the job, asks tailored questions out loud, gives you live coding problems, and then tells you "
+               "what was strong and what to improve.")
 
     paused = [] if locked else list_paused_sessions(checkpointer())
     if paused:
@@ -363,7 +371,7 @@ def setup_view() -> None:
                              index=voices.index(s.tts_voice) if s.tts_voice in voices else 0,
                              key="opt_voice", disabled=locked)
         speak = st.toggle("Read questions aloud", value=True, key="opt_speak", disabled=locked)
-        interviewer_name = st.text_input("Interviewer name", "Jordan", key="opt_name", disabled=locked)
+        name_input = st.text_input("Interviewer name", "Rohan", key="opt_name", disabled=locked)
 
     if not get_settings().tavily_api_key:
         st.info("TAVILY_API_KEY is not set, so built-in common questions will be used instead of web research.")
@@ -383,7 +391,7 @@ def setup_view() -> None:
             feedback_mode=mode,
             max_follow_ups=s.max_follow_ups,
             company=company.strip() or None,
-            interviewer_name=interviewer_name.strip() or "Jordan",
+            interviewer_name=name_input.strip() or "Rohan",
         )
         queue_action("start", "Preparing your interview (about a minute)…",
                      session=InterviewSession(checkpointer=checkpointer()),
@@ -413,7 +421,7 @@ def sidebar(session: InterviewSession, pending: dict | None) -> None:
                              f"{CATEGORY_LABEL.get(pending['category'], pending['category'])}"
                              + (" (follow-up)" if pending["is_follow_up"] else ""))
         if ss.get("clip"):
-            st.caption("🔊 Interviewer")
+            st.caption(f"🔊 {interviewer_name(session.values)} is speaking")
             st.audio(ss.clip, autoplay=True)
         st.divider()
         if st.button("End interview & get feedback", use_container_width=True, disabled=locked):
@@ -473,7 +481,7 @@ def coding_view(session: InterviewSession, pending: dict) -> None:
                         st.code(result.stderr[-1500:], language="text")
     with right:
         st.markdown("#### Conversation")
-        render_transcript(session.values.get("transcript", []), height=300)
+        render_transcript(session.values.get("transcript", []), height=300, name=interviewer_name(session.values))
         st.markdown("#### Explain your approach")
         st.caption("Talk through your approach, then give the time and space complexity. Submitting runs the hidden tests.")
         answer_box(session, pending, "Record your explanation", code=code, language=language)
@@ -483,7 +491,7 @@ def spoken_view(session: InterviewSession, pending: dict) -> None:
     left, right = st.columns([3, 2], gap="large")
     with left:
         st.markdown("#### Conversation")
-        render_transcript(session.values.get("transcript", []), height=520)
+        render_transcript(session.values.get("transcript", []), height=520, name=interviewer_name(session.values))
     with right:
         st.markdown("#### Your answer")
         st.info(pending["prompt"], icon="🎙️")
@@ -521,7 +529,7 @@ def report_view(session: InterviewSession) -> None:
     voice_update(session)
     with st.sidebar:
         if ss.get("clip"):
-            st.caption("🔊 Interviewer")
+            st.caption(f"🔊 {interviewer_name(session.values)} is speaking")
             st.audio(ss.clip, autoplay=True)
         if st.button("Start a new interview", type="primary", use_container_width=True):
             for k in ("session", "clip", "draft", "code", "last_run", "prompt_started", "last_error"):
@@ -534,7 +542,7 @@ def report_view(session: InterviewSession) -> None:
         st.caption(f"{job.title}" + (f" at {job.company}" if job.company else ""))
     render_report(values, session.report_markdown(), key_prefix=session.thread_id)
     with st.expander("Full transcript"):
-        render_transcript(values.get("transcript", []))
+        render_transcript(values.get("transcript", []), name=interviewer_name(values))
 
 
 # ======================================================================================

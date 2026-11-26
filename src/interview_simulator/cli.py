@@ -55,13 +55,15 @@ class CLI:
     # ---- output ------------------------------------------------------------------
 
     def show_new_turns(self) -> None:
-        labels = {"intro": "Interviewer", "question": "Interviewer", "follow_up": "Interviewer (follow-up)",
-                  "hint": "Hint", "tip": "Quick tip", "closing": "Interviewer"}
+        config = self.session.values.get("config")
+        name = getattr(config, "interviewer_name", None) or "Rohan"
+        labels = {"intro": name, "question": name, "follow_up": f"{name} (follow-up)",
+                  "hint": f"Hint from {name}", "tip": f"Quick tip from {name}", "closing": name}
         for turn in self.session.new_turns():
             if turn.role != "interviewer":
                 continue
             print()
-            _print_wrapped(f"🎙  {labels.get(turn.kind, 'Interviewer')}: ", turn.text)
+            _print_wrapped(f"🎙  {labels.get(turn.kind, name)}: ", turn.text)
             if self.speak:
                 from interview_simulator.voice import tts
                 try:
@@ -237,7 +239,7 @@ def show_history() -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="AI mock interview (terminal)")
+    parser = argparse.ArgumentParser(description="Interview by Rohan: AI mock interview (terminal)")
     parser.add_argument("--resume", help="Resume file (PDF/DOCX/TXT/MD)")
     parser.add_argument("--jd", help="Job description: file path, URL, or text")
     parser.add_argument("--company", help="Company name (optional, improves research)")
@@ -246,6 +248,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--mode", choices=["practice", "realistic"], default=None)
     parser.add_argument("--provider", choices=["anthropic", "google_genai"], default=None)
     parser.add_argument("--speak", action="store_true", help="Read interviewer turns aloud")
+    parser.add_argument("--interviewer", default="Rohan", help="Interviewer name (default Rohan)")
     parser.add_argument("--resume-session", metavar="ID", help="Continue a paused interview")
     parser.add_argument("--history", action="store_true", help="List past interviews")
     parser.add_argument("-v", "--verbose", action="store_true")
@@ -301,8 +304,10 @@ def main(argv: list[str] | None = None) -> int:
         feedback_mode=args.mode or settings.feedback_mode,
         max_follow_ups=settings.max_follow_ups,
         company=args.company,
+        interviewer_name=args.interviewer,
     )
     session = InterviewSession()
+    print("🎙  Interview by Rohan")
     print(f"Interview session {session.thread_id}  (resume later with --resume-session {session.thread_id})")
     print(f"Provider: {settings.llm_provider} · Preparing your interview, this takes about a minute…")
     try:

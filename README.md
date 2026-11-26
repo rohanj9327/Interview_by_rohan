@@ -1,6 +1,6 @@
-# AI Interview Simulator
+# Interview by Rohan
 
-A fully spoken mock interview for **software engineers**, built with LangGraph. It reads your resume and a job description, researches commonly asked interview questions, and then runs a tailored interview:
+Your personal AI interviewer, **Rohan**: a fully spoken mock interview for **software engineers**, built with LangGraph. It reads your resume and a job description, researches commonly asked interview questions, and then runs a tailored interview:
 
 - The interviewer reads each question aloud, and you answer with your voice.
 - Technical questions include live coding in **Python or Java**.
