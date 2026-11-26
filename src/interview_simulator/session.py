@@ -140,6 +140,21 @@ def list_paused_sessions(checkpointer, limit: int = 10) -> list[dict]:
     return out
 
 
+def delete_interview(thread_id: str, checkpointer=None) -> None:
+    """Delete everything stored for one interview: history row, checkpoints, report, code files."""
+    import shutil
+
+    from interview_simulator import history
+    from interview_simulator.config import get_settings
+
+    history.delete_session(thread_id)
+    saver = checkpointer if checkpointer is not None else sqlite_checkpointer()
+    saver.delete_thread(thread_id)
+    data = get_settings().data_path
+    (data / "reports" / f"{thread_id}.md").unlink(missing_ok=True)
+    shutil.rmtree(data / "workspace" / thread_id, ignore_errors=True)
+
+
 def transcribe_answer(audio: bytes | str, vocabulary: list[str] | None = None) -> tuple[str, DeliveryMetrics]:
     """Speech -> (transcript text, delivery metrics). Used by the UI before calling answer()."""
     from interview_simulator.voice.delivery import compute_metrics

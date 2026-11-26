@@ -145,3 +145,29 @@ def test_inputs_are_locked_while_an_action_is_queued(ui, monkeypatch):
     assert not button(at, "Start interview").disabled
     # inputs keep their values across the locked render
     assert at.toggle(key="use_sample_resume").value and at.toggle(key="use_sample_jd").value
+
+
+def test_history_delete_selected(ui):
+    from interview_simulator import history
+
+    history.save_session("keepme", job_title="SWE", overall_score=60, hire_signal="lean_yes",
+                         report_json='{"overall_score":60,"hire_signal":"lean_yes","summary":"s","top_strengths":[],'
+                                     '"improvement_areas":[],"per_question":[]}', report_markdown="# r\n", ended_early=0)
+    history.save_session("deleteme", job_title="SWE", overall_score=40, hire_signal="no",
+                         report_json='{"overall_score":40,"hire_signal":"no","summary":"s","top_strengths":[],'
+                                     '"improvement_areas":[],"per_question":[]}', report_markdown="# r\n", ended_early=0)
+    at = AppTest.from_file(str(APP / "views" / "history.py"), default_timeout=60)
+    at.run()
+    assert not at.exception, at.exception
+    assert any(m.label == "Interviews completed" and m.value == "2" for m in at.metric)
+    # delete via the per-report button + inline confirmation
+    at.selectbox[0].set_value("deleteme")
+    at.run()
+    button(at, "🗑 Delete this interview").click()
+    at.run()
+    assert any("Permanently delete" in w.value for w in at.warning)
+    button(at, "Yes, delete").click()
+    at.run()
+    assert not at.exception, at.exception
+    assert [r["id"] for r in history.list_sessions()] == ["keepme"]
+    assert any("Deleted 1 interview" in s.value for s in at.success)

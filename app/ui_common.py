@@ -125,11 +125,11 @@ def render_report(values: dict, markdown: str, key_prefix: str = "report") -> No
     chart = per_question_chart(report, values.get("plan", []))
     if chart is not None:
         st.subheader("Score by question")
-        st.altair_chart(chart, use_container_width=True)
+        st.altair_chart(chart, width="stretch")
         with st.expander("Scores as a table"):
             st.dataframe(
                 pd.DataFrame([pq.model_dump() for pq in report.per_question]),
-                hide_index=True, use_container_width=True,
+                hide_index=True, width="stretch",
             )
 
     st.markdown(markdown.split("\n", 1)[1] if markdown.startswith("# ") else markdown)

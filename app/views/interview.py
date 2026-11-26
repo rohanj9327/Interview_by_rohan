@@ -25,7 +25,7 @@ from ui_common import (
 
 from interview_simulator.config import PROJECT_ROOT, get_settings
 from interview_simulator.models import CodingProblem, InterviewConfig
-from interview_simulator.session import InterviewSession, list_paused_sessions
+from interview_simulator.session import InterviewSession, delete_interview, list_paused_sessions
 from interview_simulator.tools.code_runner import run_code, starter_code
 from interview_simulator.tools.document_loader import load_bytes, load_document
 from interview_simulator.tools.jd_fetcher import fetch_jd
@@ -227,7 +227,7 @@ def answer_box(session: InterviewSession, pending: dict, label: str, code: str |
     submit_label = "Submit solution" if code is not None else "Submit answer"
     if locked and ss.action["kind"] == "answer":
         submit_label = "Evaluating…"
-    if c1.button(submit_label, type="primary", use_container_width=True, key=f"submit_{nonce}", disabled=locked):
+    if c1.button(submit_label, type="primary", width="stretch", key=f"submit_{nonce}", disabled=locked):
         if code is None and not text.strip():
             st.warning("Record or type an answer first.")
         else:
@@ -237,10 +237,10 @@ def answer_box(session: InterviewSession, pending: dict, label: str, code: str |
                 "delivery": draft["delivery"] if voice else None, "code": code, "language": language,
             })
     hints_left = 3 - int(pending.get("hints_used", 0))
-    if c2.button(f"💡 Hint ({hints_left} left)", use_container_width=True,
+    if c2.button(f"💡 Hint ({hints_left} left)", width="stretch",
                  disabled=locked or hints_left <= 0, key=f"hint_{nonce}"):
         queue_action("hint", "Thinking of a hint…", args={"text": text, "code": code})
-    if c3.button("Skip", use_container_width=True, key=f"skip_{nonce}", disabled=locked,
+    if c3.button("Skip", width="stretch", key=f"skip_{nonce}", disabled=locked,
                  help="Move on without answering (counts as no answer)"):
         queue_action("answer", "Moving on…", args={"text": "(skipped)", "code": code, "language": language})
     show_last_error()
@@ -273,7 +273,7 @@ def setup_view() -> None:
     if paused:
         with st.expander(f"Continue a paused interview ({len(paused)})"):
             for p in paused:
-                c1, c2 = st.columns([4, 1])
+                c1, c2, c3 = st.columns([4, 1, 1])
                 c1.write(f"**{p['job'] or 'Interview'}**" + (f" at {p['company']}" if p["company"] else "")
                          + f" · question {p['progress']} · `{p['id']}`")
                 if c2.button("Continue", key=f"cont_{p['id']}"):
@@ -281,6 +281,15 @@ def setup_view() -> None:
                     ss.session = session
                     ss.spoken_upto = max(0, len(session.values.get("transcript", [])) - 1)
                     reset_answer_inputs()
+                    st.rerun()
+                if ss.get("confirm_discard") == p["id"]:
+                    if c3.button("Confirm", key=f"discard_ok_{p['id']}", type="primary",
+                                 help="Permanently delete this paused interview"):
+                        delete_interview(p["id"], checkpointer())
+                        ss.pop("confirm_discard", None)
+                        st.rerun()
+                elif c3.button("🗑 Discard", key=f"discard_{p['id']}"):
+                    ss.confirm_discard = p["id"]
                     st.rerun()
 
     left, right = st.columns(2, gap="large")
@@ -378,7 +387,7 @@ def setup_view() -> None:
 
     ready = bool(resume_text.strip()) and bool(jd_text.strip())
     label = "Preparing your interview…" if locked else "Start interview"
-    if st.button(label, type="primary", disabled=locked or not ready, use_container_width=True, key="start_btn"):
+    if st.button(label, type="primary", disabled=locked or not ready, width="stretch", key="start_btn"):
         s.llm_provider = provider
         s.tts_voice = voice
         s.answer_time_limit_sec = limit_min * 60
@@ -424,9 +433,9 @@ def sidebar(session: InterviewSession, pending: dict | None) -> None:
             st.caption(f"🔊 {interviewer_name(session.values)} is speaking")
             st.audio(ss.clip, autoplay=True)
         st.divider()
-        if st.button("End interview & get feedback", use_container_width=True, disabled=locked):
+        if st.button("End interview & get feedback", width="stretch", disabled=locked):
             queue_action("end", "Writing your feedback report…")
-        if st.button("Pause (continue later)", use_container_width=True, disabled=locked):
+        if st.button("Pause (continue later)", width="stretch", disabled=locked):
             ss.pop("session", None)
             ss.pop("clip", None)
             st.rerun()
@@ -531,7 +540,7 @@ def report_view(session: InterviewSession) -> None:
         if ss.get("clip"):
             st.caption(f"🔊 {interviewer_name(session.values)} is speaking")
             st.audio(ss.clip, autoplay=True)
-        if st.button("Start a new interview", type="primary", use_container_width=True):
+        if st.button("Start a new interview", type="primary", width="stretch"):
             for k in ("session", "clip", "draft", "code", "last_run", "prompt_started", "last_error"):
                 ss.pop(k, None)
             st.rerun()

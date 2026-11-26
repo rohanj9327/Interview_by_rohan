@@ -57,6 +57,13 @@ def list_sessions(limit: int = 100) -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def delete_session(session_id: str) -> bool:
+    """Remove a saved interview from history. Returns True if a row was deleted."""
+    with _connect() as conn:
+        cur = conn.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
+    return cur.rowcount > 0
+
+
 def get_session(session_id: str) -> dict | None:
     with _connect() as conn:
         row = conn.execute("SELECT * FROM sessions WHERE id = ?", (session_id,)).fetchone()

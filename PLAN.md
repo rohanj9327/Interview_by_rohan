@@ -430,6 +430,8 @@ The user gets **both** in-interview hints **and** the detailed end-of-interview 
 - 3-min answer cap: client-side countdown + recordings longer than the limit are trimmed before transcription.
 - Failed API steps (429/503) show a Retry button; the checkpoint keeps progress. Paused interviews are listed on the start page.
 - Charts: per-question score bars + score-over-time line (single series, slot-1 blue, tooltips, table view).
+- Delete past interviews (History page: select rows or per-report button, with inline confirmation; `--delete` in the CLI) and discard paused ones. Deleting removes the history row, checkpoints, the exported report and code files.
+- Personalised as "Interview by Rohan": the interviewer is named Rohan by default.
 - Tests: Streamlit `AppTest` flows with the fake LLM (setup → hint → answer → follow-up → end → report → history; coding screen + run tests).
 
 ### Phase 3 — Polish & extend (optional)

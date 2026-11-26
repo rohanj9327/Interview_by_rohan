@@ -43,7 +43,7 @@ uv run streamlit run app/streamlit_app.py      # opens http://localhost:8501
 1. **Setup:** upload your resume, then paste, fetch or upload the job description, or switch on the samples. Pick the provider, number of questions, coding questions, feedback mode, time limits and interviewer voice.
 2. **Interview:** the interviewer's voice plays in the sidebar. Record your answer with the mic (allow microphone access in the browser), check or edit the transcript, then submit. You can use 💡 Hint (up to 3 per question), Skip, End, or Pause.
 3. **Coding:** the problem appears with a Python/Java editor. ▶ Run checks the visible tests. Record your explanation, then submit, which runs the hidden tests.
-4. **Report:** score tiles, a per-question chart, detailed feedback and a Markdown download. Past interviews are on the **History** page.
+4. **Report:** score tiles, a per-question chart, detailed feedback and a Markdown download. Past interviews are on the **History** page, where you can delete the ones you don't want to keep (select rows, then **Delete selected**, or **Delete this interview**). Paused interviews can be discarded from the start page.
 
 ## Terminal commands
 
@@ -56,7 +56,7 @@ uv run streamlit run app/streamlit_app.py      # opens http://localhost:8501
 | `/quit` or Ctrl+C | Pause. Resume later with `--resume-session <id>` |
 | Coding: `/run`, `/submit`, `/lang java\|python` | Run the visible tests, submit, switch language. You edit the starter file shown in any editor |
 
-Other options: `--company Acme`, `--questions 10`, `--coding 2`, `--mode practice|realistic`, `--speak` (interviewer reads turns aloud), `--history` (list past interviews), `-v` (verbose logs).
+Other options: `--company Acme`, `--questions 10`, `--coding 2`, `--mode practice|realistic`, `--speak` (interviewer reads turns aloud), `--history` (list past interviews), `--delete <id> [<id> ...]` (delete interviews), `-v` (verbose logs).
 
 ## Tests
 

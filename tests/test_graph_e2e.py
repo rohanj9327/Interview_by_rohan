@@ -96,3 +96,23 @@ def test_end_immediately_gives_empty_report(fake_llm):
     drain(session.end())
     assert session.done and session.values["final_report"].overall_score == 0
     assert "FinalReport" not in fake_llm.calls
+
+
+def test_delete_interview_removes_history_and_checkpoints(fake_llm):
+    from interview_simulator.config import get_settings
+    from interview_simulator.session import delete_interview
+
+    saver = memory_checkpointer()
+    session = InterviewSession(checkpointer=saver)
+    drain(session.start("r", "j", InterviewConfig(num_questions=2, num_coding_questions=0)))
+    drain(session.answer("an answer"))
+    drain(session.end())
+    report = get_settings().data_path / "reports" / f"{session.thread_id}.md"
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_text("x")
+    assert history.get_session(session.thread_id)
+
+    delete_interview(session.thread_id, saver)
+    assert history.get_session(session.thread_id) is None
+    assert not report.exists()
+    assert not InterviewSession(thread_id=session.thread_id, checkpointer=saver).started

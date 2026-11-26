@@ -251,6 +251,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--interviewer", default="Rohan", help="Interviewer name (default Rohan)")
     parser.add_argument("--resume-session", metavar="ID", help="Continue a paused interview")
     parser.add_argument("--history", action="store_true", help="List past interviews")
+    parser.add_argument("--delete", metavar="ID", nargs="+", help="Delete past/paused interviews by session id")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args(argv)
 
@@ -260,6 +261,14 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.history:
         show_history()
+        return 0
+
+    if args.delete:
+        from interview_simulator.session import delete_interview
+
+        for thread_id in args.delete:
+            delete_interview(thread_id)
+            print(f"Deleted interview {thread_id}")
         return 0
 
     settings = get_settings()
